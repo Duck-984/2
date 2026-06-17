@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Minus, Plus, ShoppingCart, Share2, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingCart, Share2, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { useTranslation } from '../hooks/useTranslation';
 import { useCartStore } from '../store/useCartStore';
@@ -26,37 +26,27 @@ export const ProductDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
     if (product) {
-      if (product.sizes && product.sizes.length > 0) {
-        setSelectedSize(product.sizes[0]);
-      }
-      if (product.colors && product.colors.length > 0) {
-        setSelectedColor(product.colors[0] as { name: string; hex: string });
-      }
+      if (product.sizes && product.sizes.length > 0) setSelectedSize(product.sizes[0]);
+      if (product.colors && product.colors.length > 0) setSelectedColor(product.colors[0] as { name: string; hex: string });
       incrementViews.mutate(product.id);
     }
-  }, [product?.id, incrementViews, product]);
+  }, [product?.id]);
 
   const handleShare = async () => {
     if (!product) return;
-
     const shareUrl = `${window.location.origin}/product/${product.slug}`;
     const shareText = `${getLocalizedValue(product.name, language)} - ${formatPrice(product.price as number)}`;
-
     if (tg) {
-      (tg as { openTelegramLink?: (url: string) => void }).openTelegramLink?.(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`);
+      (tg as { openTelegramLink?: (url: string) => void }).openTelegramLink?.(
+        `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
+      );
     } else if (navigator.share) {
-      try {
-        await navigator.share({
-          title: getLocalizedValue(product.name, language),
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch (err) {
-        console.error('Share failed:', err);
-      }
+      try { await navigator.share({ title: getLocalizedValue(product.name, language), text: shareText, url: shareUrl }); }
+      catch { /* user cancelled */ }
     } else {
       navigator.clipboard.writeText(shareUrl);
       toast.success(language === 'ru' ? 'Ссылка скопирована' : 'Havola nusxalandi');
@@ -65,17 +55,8 @@ export const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
-
-    if (product.sizes.length > 0 && !selectedSize) {
-      toast.warning(t('select_size'));
-      return;
-    }
-
-    if (product.colors.length > 0 && !selectedColor) {
-      toast.warning(t('select_color'));
-      return;
-    }
-
+    if (product.sizes.length > 0 && !selectedSize) { toast.warning(t('select_size')); return; }
+    if (product.colors.length > 0 && !selectedColor) { toast.warning(t('select_color')); return; }
     addItem({
       productId: product.id,
       name: product.name,
@@ -85,7 +66,6 @@ export const ProductDetail = () => {
       size: selectedSize,
       color: selectedColor,
     });
-
     hapticNotification('success');
     toast.success(t('add_to_cart'));
     navigate('/cart');
@@ -101,38 +81,31 @@ export const ProductDetail = () => {
     setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX);
+  const handleTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe) {
-      nextImage();
-    }
-    if (isRightSwipe) {
-      prevImage();
-    }
-
+    if (distance > 50) nextImage();
+    if (distance < -50) prevImage();
     setTouchStart(0);
     setTouchEnd(0);
   };
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="text-center py-12">
-          <div className="inline-block w-8 h-8 border-4 border-surface-900 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-surface-500 dark:text-surface-400 mt-2">{t('loading')}</p>
+      <Layout showBottomNav={false}>
+        <div className="min-h-screen bg-surface-50 flex flex-col">
+          {/* skeleton gallery */}
+          <div className="w-full bg-surface-100" style={{ height: '62vh' }}>
+            <div className="w-full h-full skeleton" />
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="h-6 w-2/3 skeleton rounded-lg" />
+            <div className="h-5 w-1/3 skeleton rounded-lg" />
+            <div className="h-4 w-full skeleton rounded-lg" />
+            <div className="h-4 w-4/5 skeleton rounded-lg" />
+          </div>
         </div>
       </Layout>
     );
@@ -140,146 +113,176 @@ export const ProductDetail = () => {
 
   if (!product) {
     return (
-      <Layout>
-        <div className="text-center py-12">
-          <p className="text-surface-500 dark:text-surface-400">
-            {language === 'ru' ? 'Товар не найден' : 'Mahsulot topilmadi'}
-          </p>
+      <Layout showBottomNav={false}>
+        <div className="min-h-screen bg-surface-50 flex items-center justify-center">
+          <div className="text-center px-8">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-10 h-10 rounded-full bg-white border border-surface-200 flex items-center justify-center shadow-card mb-6 mx-auto transition-transform duration-150 active:scale-95"
+            >
+              <ArrowLeft className="w-5 h-5 text-surface-700" />
+            </button>
+            <p className="text-surface-500 text-sm">
+              {language === 'ru' ? 'Товар не найден' : 'Mahsulot topilmadi'}
+            </p>
+          </div>
         </div>
       </Layout>
     );
   }
 
+  const images = product.images.length > 0 ? product.images : [''];
+
   return (
     <Layout showBottomNav={false}>
-      <div className="bg-white dark:bg-surface-900 pb-24">
-        <div className="relative">
-          {product.images.length > 0 ? (
-            <>
-              <div
-                className="aspect-square bg-surface-100 dark:bg-surface-800 relative overflow-hidden"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <img
-                  src={product.images[currentImageIndex]}
-                  alt={getLocalizedValue(product.name, language)}
-                  className="w-full h-full object-cover"
-                />
+      <div className="bg-surface-50 min-h-screen pb-28">
 
-                {product.images.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition shadow-sm"
-                    >
-                      <ChevronLeft className="w-5 h-5 text-surface-900" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition shadow-sm"
-                    >
-                      <ChevronRight className="w-5 h-5 text-surface-900" />
-                    </button>
+        {/* ─── GALLERY ─── */}
+        <div className="relative w-full bg-surface-100" style={{ height: '62vh' }}>
 
-                    <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                      {product.images.map((_: string, index: number) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            index === currentImageIndex
-                              ? 'bg-white w-6'
-                              : 'bg-white/50'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
+          {/* Back button — always visible, always clickable */}
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Назад"
+            className="absolute top-4 left-4 z-30 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-card transition-all duration-150 active:scale-95 hover:bg-white"
+            style={{ boxShadow: '0 2px 8px rgba(28,28,28,0.12)' }}
+          >
+            <ArrowLeft className="w-5 h-5 text-surface-900" />
+          </button>
+
+          {/* Main image */}
+          <div
+            className="w-full h-full overflow-hidden select-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {product.images.length > 0 ? (
+              <img
+                key={currentImageIndex}
+                src={images[currentImageIndex]}
+                alt={getLocalizedValue(product.name, language)}
+                className="w-full h-full object-cover"
+                style={{ transition: 'opacity 200ms ease' }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-surface-300 text-sm">
+                {t('no_image')}
               </div>
+            )}
+          </div>
 
-              {product.images.length > 1 && (
-                <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide bg-white dark:bg-surface-900">
-                  {product.images.map((img: string, index: number) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
-                        index === currentImageIndex
-                          ? 'border-surface-900'
-                          : 'border-transparent hover:border-surface-300'
-                      }`}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
+          {/* Prev / Next arrows (only when >1 image) */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={prevImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow-sm transition-all duration-150 active:scale-95 hover:bg-white"
+              >
+                <ChevronLeft className="w-5 h-5 text-surface-900" />
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow-sm transition-all duration-150 active:scale-95 hover:bg-white"
+              >
+                <ChevronRight className="w-5 h-5 text-surface-900" />
+              </button>
             </>
-          ) : (
-            <div className="aspect-square bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-              <span className="text-surface-400">{t('no_image')}</span>
+          )}
+
+          {/* Dot indicators */}
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-20">
+              {images.map((_: string, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentImageIndex(i)}
+                  className="transition-all duration-200"
+                  style={{
+                    width: i === currentImageIndex ? 20 : 6,
+                    height: 6,
+                    borderRadius: 3,
+                    background: i === currentImageIndex ? 'rgba(28,28,28,0.85)' : 'rgba(28,28,28,0.25)',
+                  }}
+                />
+              ))}
             </div>
           )}
         </div>
 
-        <div className="p-5">
-          <div className="flex items-start justify-between mb-1">
-            <h1 className="text-xl font-bold text-surface-900 dark:text-white flex-1 leading-tight">
-              {getLocalizedValue(product.name, language)}
-            </h1>
-            <button
-              onClick={handleShare}
-              className="ml-3 p-2 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-700 transition text-surface-500 hover:text-surface-900"
-            >
-              <Share2 className="w-5 h-5" />
-            </button>
+        {/* ─── THUMBNAIL STRIP ─── */}
+        {images.length > 1 && (
+          <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide bg-white border-b border-surface-200/60">
+            {images.map((img: string, i: number) => (
+              <button
+                key={i}
+                onClick={() => setCurrentImageIndex(i)}
+                className="flex-shrink-0 rounded-xl overflow-hidden transition-all duration-200"
+                style={{
+                  width: 48,
+                  height: 48,
+                  border: i === currentImageIndex
+                    ? '1.5px solid #1C1C1C'
+                    : '1.5px solid transparent',
+                  outline: i === currentImageIndex ? '1.5px solid #1C1C1C' : 'none',
+                  outlineOffset: 1,
+                }}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
           </div>
+        )}
 
+        {/* ─── PRODUCT INFO ─── */}
+        <div className="bg-white px-5 pt-5 pb-6">
+
+          {/* Name */}
+          <h1
+            className="font-semibold text-surface-900 leading-snug mb-1"
+            style={{ fontSize: 19, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
+            {getLocalizedValue(product.name, language)}
+          </h1>
+
+          {/* Rating */}
           {rating && rating.count > 0 && (
-            <div className="flex items-center gap-1.5 mb-3">
-              <div className="flex items-center">
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-3.5 h-3.5 ${
-                      i < Math.round(rating.average)
-                        ? 'text-surface-900 fill-current'
-                        : 'text-surface-300 dark:text-surface-600'
-                    }`}
+                    className={`w-3 h-3 ${i < Math.round(rating.average) ? 'text-accent fill-current' : 'text-surface-300'}`}
                   />
                 ))}
               </div>
-              <span className="text-xs text-surface-500 dark:text-surface-400">
+              <span className="text-xs text-surface-500">
                 {rating.average.toFixed(1)} · {rating.count} {language === 'ru' ? 'отзывов' : 'sharh'}
               </span>
             </div>
           )}
 
-          <p className="text-2xl font-extrabold text-surface-900 mb-4">
-            {formatPrice(product.price as number)}
-          </p>
-
-          {product.stock > 0 ? (
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1.5 h-1.5 bg-success rounded-full"></div>
-              <span className="text-sm text-success font-medium">
-                {t('in_stock')}
-                {product.stock < 10 && ` — ${language === 'ru' ? 'осталось' : 'qoldi'}: ${product.stock}`}
+          {/* Price + stock row */}
+          <div className="flex items-center justify-between mb-5">
+            <p className="text-xl font-bold text-surface-900" style={{ fontSize: 22 }}>
+              {formatPrice(product.price as number)}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <div className={`w-1.5 h-1.5 rounded-full ${product.stock > 0 ? 'bg-success' : 'bg-danger'}`} />
+              <span className={`text-xs font-medium ${product.stock > 0 ? 'text-success' : 'text-danger'}`}>
+                {product.stock > 0
+                  ? (product.stock < 10
+                    ? `${language === 'ru' ? 'Осталось' : 'Qoldi'}: ${product.stock}`
+                    : t('in_stock'))
+                  : t('out_of_stock')}
               </span>
             </div>
-          ) : (
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1.5 h-1.5 bg-danger rounded-full"></div>
-              <span className="text-sm text-danger font-medium">{t('out_of_stock')}</span>
-            </div>
-          )}
+          </div>
 
+          {/* Sizes */}
           {product.sizes.length > 0 && (
             <div className="mb-5">
-              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2.5">
+              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2.5">
                 {t('select_size')}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -287,11 +290,12 @@ export const ProductDetail = () => {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`min-w-[44px] h-11 px-4 rounded-xl border text-sm font-semibold transition-all ${
-                      selectedSize === size
-                        ? 'bg-surface-900 text-white border-surface-900'
-                        : 'bg-white dark:bg-surface-800 text-surface-900 dark:text-white border-surface-200 dark:border-surface-600 hover:border-surface-400'
-                    }`}
+                    className="min-w-[44px] h-11 px-4 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
+                    style={{
+                      background: selectedSize === size ? '#1C1C1C' : '#fff',
+                      color: selectedSize === size ? '#fff' : '#1C1C1C',
+                      border: selectedSize === size ? '1.5px solid #1C1C1C' : '1.5px solid #E6DED3',
+                    }}
                   >
                     {size}
                   </button>
@@ -300,100 +304,111 @@ export const ProductDetail = () => {
             </div>
           )}
 
+          {/* Colors */}
           {product.colors.length > 0 && (
             <div className="mb-5">
-              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2.5">
+              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2.5">
                 {t('select_color')}
               </p>
-              <div className="flex flex-wrap gap-2.5">
-                {product.colors.map((color: { name: string; hex: string }) => {
-                  const col = color;
-                  return (
-                    <button
-                      key={col.hex}
-                      onClick={() => setSelectedColor(col)}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border text-sm transition-all ${
-                        selectedColor?.hex === col.hex
-                          ? 'border-surface-900 bg-surface-50 dark:bg-surface-800'
-                          : 'border-surface-200 dark:border-surface-600 hover:border-surface-400'
-                      }`}
-                    >
-                      <div
-                        className="w-5 h-5 rounded-full border border-surface-200 flex-shrink-0"
-                        style={{ backgroundColor: col.hex }}
-                      />
-                      <span className="text-surface-900 dark:text-white font-medium">{col.name}</span>
-                    </button>
-                  );
-                })}
+              <div className="flex flex-wrap gap-2">
+                {product.colors.map((color: { name: string; hex: string }) => (
+                  <button
+                    key={color.hex}
+                    onClick={() => setSelectedColor(color)}
+                    className="flex items-center gap-2 px-3 h-11 rounded-xl text-sm font-medium transition-all duration-150 active:scale-95"
+                    style={{
+                      background: selectedColor?.hex === color.hex ? '#FAF7F2' : '#fff',
+                      border: selectedColor?.hex === color.hex ? '1.5px solid #1C1C1C' : '1.5px solid #E6DED3',
+                      color: '#1C1C1C',
+                    }}
+                  >
+                    <span
+                      className="w-5 h-5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: color.hex, border: '1px solid rgba(28,28,28,0.12)' }}
+                    />
+                    {color.name}
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
+          {/* Quantity */}
           <div className="mb-6">
-            <p className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2.5">
+            <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2.5">
               {t('quantity')}
             </p>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-11 h-11 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-800 flex items-center justify-center hover:border-surface-400 transition active:scale-95"
+                className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-150 active:scale-95"
+                style={{ border: '1.5px solid #E6DED3', background: '#fff' }}
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-4 h-4 text-surface-700" />
               </button>
-              <span className="text-xl font-bold min-w-[2rem] text-center text-surface-900 dark:text-white">{quantity}</span>
+              <span className="text-xl font-bold min-w-[2rem] text-center text-surface-900">{quantity}</span>
               <button
-                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                className="w-11 h-11 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-800 flex items-center justify-center hover:border-surface-400 transition active:scale-95"
+                onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))}
+                className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-150 active:scale-95"
+                style={{ border: '1.5px solid #E6DED3', background: '#fff' }}
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 text-surface-700" />
               </button>
             </div>
           </div>
 
+          {/* Description */}
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2">
+            <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2.5">
               {t('description')}
             </h2>
-            <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed whitespace-pre-line">
+            <p className="text-sm text-surface-600 leading-relaxed whitespace-pre-line">
               {getLocalizedValue(product.description, language)}
             </p>
           </div>
 
+          {/* Specs */}
           {product.specs && Object.keys(product.specs).length > 0 && (
             <div className="mb-6">
-              <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-3">
+              <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3">
                 {t('specifications')}
               </h2>
-              <div className="bg-surface-50 dark:bg-surface-800 rounded-xl overflow-hidden">
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E6DED3' }}>
                 {Object.entries(product.specs).map(([key, value], i) => (
                   <div
                     key={key}
-                    className={`flex justify-between py-2.5 px-4 text-sm ${i > 0 ? 'border-t border-surface-100 dark:border-surface-700' : ''}`}
+                    className="flex justify-between py-3 px-4 text-sm"
+                    style={{ borderTop: i > 0 ? '1px solid #E6DED3' : 'none', background: i % 2 === 0 ? '#FAF7F2' : '#fff' }}
                   >
-                    <span className="text-surface-500 dark:text-surface-400">{key}</span>
-                    <span className="text-surface-900 dark:text-white font-medium">{String(value)}</span>
+                    <span className="text-surface-500">{key}</span>
+                    <span className="text-surface-900 font-medium">{String(value)}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
+          {/* Reviews */}
           {reviews.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-3">
+            <div className="mb-2">
+              <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3">
                 {language === 'ru' ? 'Отзывы' : 'Sharhlar'} ({reviews.length})
               </h2>
               <div className="space-y-3">
                 {reviews.slice(0, 3).map((review) => (
-                  <div key={review.id} className="bg-surface-50 dark:bg-surface-800 rounded-xl p-4">
+                  <div
+                    key={review.id}
+                    className="rounded-xl p-4"
+                    style={{ background: '#FAF7F2', border: '1px solid #E6DED3' }}
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-surface-900 dark:text-white">
-                          {review.user_name}
-                        </span>
+                        <span className="text-sm font-semibold text-surface-900">{review.user_name}</span>
                         {review.is_verified_purchase && (
-                          <span className="text-xs bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-300 px-2 py-0.5 rounded-full">
+                          <span
+                            className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ background: '#E6DED3', color: '#5C5248' }}
+                          >
                             {language === 'ru' ? 'Проверено' : 'Tasdiqlangan'}
                           </span>
                         )}
@@ -402,17 +417,13 @@ export const ProductDetail = () => {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-3.5 h-3.5 ${
-                              i < review.rating
-                                ? 'text-surface-900 fill-current'
-                                : 'text-surface-300 dark:text-surface-600'
-                            }`}
+                            className={`w-3 h-3 ${i < review.rating ? 'text-accent fill-current' : 'text-surface-300'}`}
                           />
                         ))}
                       </div>
                     </div>
                     {review.comment && (
-                      <p className="text-sm text-surface-600 dark:text-surface-400">{review.comment}</p>
+                      <p className="text-sm text-surface-600 leading-relaxed">{review.comment}</p>
                     )}
                   </div>
                 ))}
@@ -420,12 +431,46 @@ export const ProductDetail = () => {
             </div>
           )}
         </div>
+      </div>
 
-        <div className="fixed bottom-0 left-0 right-0 glass dark:glass-dark border-t border-surface-100/50 dark:border-surface-700/50 px-4 py-3 pb-safe shadow-elevated z-40">
+      {/* ─── FIXED BOTTOM BAR ─── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm pb-safe"
+        style={{ borderTop: '1px solid #E6DED3', boxShadow: '0 -4px 24px rgba(28,28,28,0.07)' }}
+      >
+        <div className="flex items-center gap-3 px-4 py-3">
+
+          {/* Wishlist */}
+          <button
+            onClick={() => { setLiked(!liked); hapticNotification(liked ? 'warning' : 'success'); }}
+            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-150 active:scale-95"
+            style={{ border: '1.5px solid #E6DED3', background: liked ? '#FEE2E2' : '#fff' }}
+          >
+            <Heart
+              className="w-5 h-5 transition-colors duration-150"
+              style={{ color: liked ? '#EF4444' : '#7A6F66', fill: liked ? '#EF4444' : 'none' }}
+            />
+          </button>
+
+          {/* Share */}
+          <button
+            onClick={handleShare}
+            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-150 active:scale-95"
+            style={{ border: '1.5px solid #E6DED3', background: '#fff' }}
+          >
+            <Share2 className="w-5 h-5 text-surface-500" />
+          </button>
+
+          {/* Add to Cart — primary CTA */}
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="w-full btn-brand py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm disabled:bg-surface-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex-1 h-12 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed"
+            style={{
+              background: product.stock === 0 ? '#D5C9BC' : '#1C1C1C',
+              color: '#fff',
+              fontSize: 15,
+            }}
           >
             <ShoppingCart className="w-5 h-5" />
             <span>{product.stock === 0 ? t('out_of_stock') : t('add_to_cart')}</span>
