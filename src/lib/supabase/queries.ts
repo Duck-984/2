@@ -703,3 +703,44 @@ export const paymentQueries = {
     return response.json();
   },
 };
+
+export const favoriteQueries = {
+  getByUser: async (telegramUserId: number) => {
+    if (!isSupabaseConfigured || !telegramUserId) return [];
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('*, products(*)')
+      .eq('telegram_user_id', telegramUserId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map((row) => ({ ...row.products, favoriteId: row.id })) as (Product & { favoriteId: string })[];
+  },
+
+  getProductIds: async (telegramUserId: number) => {
+    if (!isSupabaseConfigured || !telegramUserId) return [] as string[];
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('product_id')
+      .eq('telegram_user_id', telegramUserId);
+    if (error) throw error;
+    return (data ?? []).map((row) => row.product_id) as string[];
+  },
+
+  add: async (telegramUserId: number, productId: string) => {
+    if (!isSupabaseConfigured) return;
+    const { error } = await supabase
+      .from('favorites')
+      .insert({ telegram_user_id: telegramUserId, product_id: productId });
+    if (error && !error.message.includes('unique')) throw error;
+  },
+
+  remove: async (telegramUserId: number, productId: string) => {
+    if (!isSupabaseConfigured) return;
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('telegram_user_id', telegramUserId)
+      .eq('product_id', productId);
+    if (error) throw error;
+  },
+};

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { getLocalizedValue, formatPrice } from '../lib/utils';
 import { useCartStore } from '../store/useCartStore';
+import { useFavoriteIds, useToggleFavorite } from '../lib/supabase/hooks';
+import { useAppStore } from '../store/useAppStore';
 import { hapticNotification } from '../lib/telegram';
 import { toast } from './Toast';
 import type { Database } from '../lib/supabase';
@@ -18,27 +20,32 @@ export const ProductCard = memo(({ product, language }: ProductCardProps) => {
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [liked, setLiked] = useState(false);
+
+  const userId = useAppStore((s) => s.getUserId());
+  const { data: favoriteIds = [] } = useFavoriteIds(userId);
+  const toggleFavorite = useToggleFavorite(userId);
+  const isFavorite = favoriteIds.includes(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (product.stock === 0) return;
-
-    const firstSize = product.sizes?.[0];
-    const firstColor = product.colors?.[0];
-
     addItem({
       productId: product.id,
       name: product.name,
       price: product.price as number,
       image: product.images?.[0] || '',
       quantity: 1,
-      size: firstSize,
-      color: firstColor,
+      size: product.sizes?.[0],
+      color: product.colors?.[0],
     });
-
     hapticNotification('success');
     toast.success(language === 'ru' ? 'Добавлено в корзину' : "Savatga qo'shildi");
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavorite.mutate({ productId: product.id, isFavorite });
+    hapticNotification(isFavorite ? 'warning' : 'success');
   };
 
   return (
@@ -61,29 +68,28 @@ export const ProductCard = memo(({ product, language }: ProductCardProps) => {
           onLoad={() => setImageLoaded(true)}
         />
 
-        {/* Low stock badge */}
         {product.stock > 0 && product.stock < 5 && (
           <div className="absolute top-2 left-2 bg-surface-900 text-white text-2xs font-bold px-2 py-0.5 rounded-lg">
             {language === 'ru' ? `Осталось ${product.stock}` : `${product.stock} qoldi`}
           </div>
         )}
 
-        {/* Like button */}
+        {/* Favorite button */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setLiked(!liked);
-          }}
-          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 dark:bg-surface-900/80 backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
+          onClick={handleToggleFavorite}
+          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center transition-all duration-150 hover:scale-110 active:scale-90"
+          style={{ boxShadow: '0 1px 4px rgba(28,28,28,0.1)' }}
         >
           <Heart
-            className={`w-4 h-4 transition-colors ${
-              liked ? 'text-danger fill-danger' : 'text-surface-400'
-            }`}
+            className="w-4 h-4 transition-all duration-150"
+            style={{
+              color: isFavorite ? '#EF4444' : '#B0A090',
+              fill: isFavorite ? '#EF4444' : 'none',
+            }}
           />
         </button>
 
-        {/* Quick add button */}
+        {/* Quick add */}
         {product.stock > 0 && (
           <button
             onClick={handleAddToCart}

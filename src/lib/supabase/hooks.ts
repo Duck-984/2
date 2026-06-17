@@ -11,6 +11,7 @@ import {
   deliveryZoneQueries,
   inventoryQueries,
   userQueries,
+  favoriteQueries,
   type ProductFilters,
   type ProductSort,
   PAGE_SIZE,
@@ -325,6 +326,55 @@ export const useCreatePayment = () => {
     }) => paymentQueries.createPayment(orderId, amount, paymentMethod),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+// Favorites
+export const useFavorites = (telegramUserId: number) => {
+  return useQuery({
+    queryKey: ['favorites', telegramUserId],
+    queryFn: () => favoriteQueries.getByUser(telegramUserId),
+    enabled: telegramUserId > 0,
+  });
+};
+
+export const useFavoriteIds = (telegramUserId: number) => {
+  return useQuery({
+    queryKey: ['favorite_ids', telegramUserId],
+    queryFn: () => favoriteQueries.getProductIds(telegramUserId),
+    enabled: telegramUserId > 0,
+    staleTime: 1000 * 60,
+  });
+};
+
+export const useToggleFavorite = (telegramUserId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ productId, isFavorite }: { productId: string; isFavorite: boolean }) => {
+      if (isFavorite) {
+        await favoriteQueries.remove(telegramUserId, productId);
+      } else {
+        await favoriteQueries.add(telegramUserId, productId);
+      }
+    },
+    onMutate: async ({ productId, isFavorite }) => {
+      await queryClient.cancelQueries({ queryKey: ['favorite_ids', telegramUserId] });
+      const prev = queryClient.getQueryData<string[]>(['favorite_ids', telegramUserId]) ?? [];
+      queryClient.setQueryData<string[]>(
+        ['favorite_ids', telegramUserId],
+        isFavorite ? prev.filter((id) => id !== productId) : [...prev, productId]
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) {
+        queryClient.setQueryData(['favorite_ids', telegramUserId], ctx.prev);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorite_ids', telegramUserId] });
+      queryClient.invalidateQueries({ queryKey: ['favorites', telegramUserId] });
     },
   });
 };

@@ -4,7 +4,8 @@ import { ArrowLeft, Minus, Plus, ShoppingCart, Share2, Heart, Star, ChevronLeft,
 import { Layout } from '../components/Layout';
 import { useTranslation } from '../hooks/useTranslation';
 import { useCartStore } from '../store/useCartStore';
-import { useProduct, useIncrementViews, useProductReviews, useProductRating } from '../lib/supabase/hooks';
+import { useProduct, useIncrementViews, useProductReviews, useProductRating, useFavoriteIds, useToggleFavorite } from '../lib/supabase/hooks';
+import { useAppStore } from '../store/useAppStore';
 import { formatPrice, getLocalizedValue } from '../lib/utils';
 import { hapticNotification, tg } from '../lib/telegram';
 import { toast } from '../components/Toast';
@@ -15,10 +16,16 @@ export const ProductDetail = () => {
   const { t, language } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
 
+  const userId = useAppStore((s) => s.getUserId());
+  const { data: favoriteIds = [] } = useFavoriteIds(userId);
+  const toggleFavorite = useToggleFavorite(userId);
+
   const { data: product, isLoading } = useProduct(slug!);
   const incrementViews = useIncrementViews();
   const { data: reviews = [] } = useProductReviews(product?.id || '');
   const { data: rating } = useProductRating(product?.id || '');
+
+  const isFavorite = product ? favoriteIds.includes(product.id) : false;
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
@@ -26,7 +33,6 @@ export const ProductDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
-  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -442,13 +448,17 @@ export const ProductDetail = () => {
 
           {/* Wishlist */}
           <button
-            onClick={() => { setLiked(!liked); hapticNotification(liked ? 'warning' : 'success'); }}
+            onClick={() => {
+              if (!product) return;
+              toggleFavorite.mutate({ productId: product.id, isFavorite });
+              hapticNotification(isFavorite ? 'warning' : 'success');
+            }}
             className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-150 active:scale-95"
-            style={{ border: '1.5px solid #E6DED3', background: liked ? '#FEE2E2' : '#fff' }}
+            style={{ border: '1.5px solid #E6DED3', background: isFavorite ? '#FEE2E2' : '#fff' }}
           >
             <Heart
-              className="w-5 h-5 transition-colors duration-150"
-              style={{ color: liked ? '#EF4444' : '#7A6F66', fill: liked ? '#EF4444' : 'none' }}
+              className="w-5 h-5 transition-all duration-150"
+              style={{ color: isFavorite ? '#EF4444' : '#7A6F66', fill: isFavorite ? '#EF4444' : 'none' }}
             />
           </button>
 

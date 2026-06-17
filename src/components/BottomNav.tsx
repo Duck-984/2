@@ -1,16 +1,21 @@
-import { ShoppingCart, Package, User, LayoutGrid } from 'lucide-react';
+import { ShoppingCart, Package, User, LayoutGrid, Heart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { useCartStore } from '../store/useCartStore';
+import { useFavoriteIds } from '../lib/supabase/hooks';
+import { useAppStore } from '../store/useAppStore';
 import { cn } from '../lib/utils';
 
 export const BottomNav = () => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const location = useLocation();
   const totalItems = useCartStore((state) => state.getTotalItems());
+  const userId = useAppStore((s) => s.getUserId());
+  const { data: favoriteIds = [] } = useFavoriteIds(userId);
 
   const navItems = [
     { path: '/catalog', icon: LayoutGrid, label: t('catalog') },
+    { path: '/favorites', icon: Heart, label: language === 'ru' ? 'Избранное' : 'Tanlangan', badge: favoriteIds.length },
     { path: '/cart', icon: ShoppingCart, label: t('cart'), badge: totalItems },
     { path: '/orders', icon: Package, label: t('orders') },
     { path: '/profile', icon: User, label: t('profile') },
@@ -22,6 +27,7 @@ export const BottomNav = () => {
         {navItems.map(({ path, icon: Icon, label, badge }) => {
           const isActive = location.pathname === path ||
             (path === '/catalog' && location.pathname.startsWith('/product'));
+          const isFavorites = path === '/favorites';
           return (
             <Link
               key={path}
@@ -41,6 +47,7 @@ export const BottomNav = () => {
                   <Icon
                     className="w-5 h-5 transition-all duration-200"
                     strokeWidth={isActive ? 2.5 : 1.8}
+                    style={isActive && isFavorites ? { fill: '#C9A24D', color: '#C9A24D' } : undefined}
                   />
                 </div>
                 {badge != null && badge > 0 && (
