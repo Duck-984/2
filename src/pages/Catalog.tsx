@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { BannerSlider } from '../components/BannerSlider';
 import { ProductCardSkeleton } from '../components/Skeleton';
 import { useTranslation } from '../hooks/useTranslation';
+import { useDebounce } from '../hooks/useDebounce';
 import { useProducts, useCategories, useBanners } from '../lib/supabase/hooks';
 import { getLocalizedValue, cn } from '../lib/utils';
 
@@ -12,6 +13,7 @@ export const Catalog = () => {
   const { t, language } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<'created_at' | 'price' | 'views'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -31,7 +33,7 @@ export const Catalog = () => {
     sizes: selectedSizes.length > 0 ? selectedSizes : undefined,
     colors: selectedColors.length > 0 ? selectedColors : undefined,
     inStock: inStockOnly,
-    search: searchQuery || undefined,
+    search: debouncedSearch || undefined,
   };
 
   const sort = { field: sortBy, order: sortOrder };
@@ -84,6 +86,9 @@ export const Catalog = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="input-premium pl-10 pr-12"
           />
+          {searchQuery && searchQuery !== debouncedSearch && (
+            <div className="absolute right-12 top-1/2 -translate-y-1/2 w-3 h-3 border-2 border-surface-400 border-t-transparent rounded-full animate-spin" />
+          )}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
@@ -268,7 +273,7 @@ export const Catalog = () => {
               <Search className="w-7 h-7 text-surface-300 dark:text-surface-600" />
             </div>
             <p className="text-sm font-medium text-surface-400">
-              {searchQuery || activeFiltersCount > 0
+              {debouncedSearch || activeFiltersCount > 0
                 ? language === 'ru' ? 'Товары не найдены' : 'Mahsulotlar topilmadi'
                 : language === 'ru' ? 'Нет товаров' : "Mahsulotlar yo'q"}
             </p>
