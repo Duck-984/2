@@ -20,6 +20,8 @@
     font-feature-settings: 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #FAF7F2;
+    color: #1C1C1C;
   }
 
   input, select, textarea, button {
@@ -27,7 +29,7 @@
   }
 
   ::selection {
-    background-color: rgba(14, 14, 14, 0.15);
+    background-color: rgba(201, 162, 77, 0.2);
     color: inherit;
   }
 }
@@ -65,68 +67,68 @@
   .glass {
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    background-color: rgba(250, 248, 245, 0.9);
+    background-color: rgba(250, 247, 242, 0.92);
   }
 
   .glass-dark {
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    background-color: rgba(26, 26, 26, 0.9);
+    background-color: rgba(28, 28, 28, 0.92);
   }
 
   .glass-card {
     backdrop-filter: blur(12px) saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
-    background: rgba(250, 248, 245, 0.7);
-    border: 1px solid rgba(237, 232, 227, 0.3);
+    background: rgba(250, 247, 242, 0.7);
+    border: 1px solid rgba(230, 222, 211, 0.5);
   }
 
   .gradient-brand {
-    background: #0E0E0E;
+    background: #1C1C1C;
   }
 
   .gradient-brand-reverse {
-    background: #1A1A1A;
+    background: #2A221A;
   }
 
   .gradient-navy {
-    background: #0E0E0E;
+    background: #1C1C1C;
   }
 
   .gradient-hero {
-    background: linear-gradient(160deg, #0E0E0E 0%, #1A1A1A 40%, #2A2A2A 70%, #4A4A4A 100%);
+    background: linear-gradient(160deg, #1C1C1C 0%, #2A221A 40%, #3D342C 70%, #5C5248 100%);
   }
 
   .gradient-warm {
-    background: #0E0E0E;
+    background: linear-gradient(135deg, #FAF7F2 0%, #F3EDE4 100%);
   }
 
   .gradient-cool {
-    background: #1A1A1A;
+    background: #2A221A;
   }
 
   .text-gradient-brand {
-    background: linear-gradient(135deg, #0E0E0E, #4A4A4A);
+    background: linear-gradient(135deg, #1C1C1C, #5C5248);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .text-gradient-navy {
-    background: linear-gradient(135deg, #1A1A1A, #8F8F8F);
+  .text-gradient-accent {
+    background: linear-gradient(135deg, #C9A24D, #8B6E2A);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .skeleton {
-    background: linear-gradient(90deg, #EDE8E3 25%, #F6F2EE 50%, #EDE8E3 75%);
+    background: linear-gradient(90deg, #E6DED3 25%, #F3EDE4 50%, #E6DED3 75%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite linear;
   }
 
   .skeleton-dark {
-    background: linear-gradient(90deg, #2A2A2A 25%, #3A3A3A 50%, #2A2A2A 75%);
+    background: linear-gradient(90deg, #2A221A 25%, #3D342C 50%, #2A221A 75%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite linear;
   }
@@ -168,11 +170,11 @@
   }
 
   .ring-brand {
-    --tw-ring-color: rgba(14, 14, 14, 0.2);
+    --tw-ring-color: rgba(201, 162, 77, 0.25);
   }
 
   .border-brand {
-    border-color: rgba(14, 14, 14, 0.15);
+    border-color: rgba(201, 162, 77, 0.3);
   }
 }
 
@@ -249,6 +251,12 @@
     @apply active:scale-[0.97];
   }
 
+  .btn-accent {
+    @apply relative overflow-hidden font-semibold transition-all duration-200;
+    @apply bg-accent text-white hover:bg-accent-dark active:scale-[0.97];
+    @apply shadow-sm;
+  }
+
   .card-premium {
     @apply bg-white dark:bg-surface-800 rounded-2xl shadow-card;
     @apply transition-all duration-300;
@@ -259,7 +267,7 @@
     @apply bg-white dark:bg-surface-800;
     @apply text-surface-900 dark:text-white placeholder-surface-400;
     @apply outline-none transition-all duration-200;
-    @apply focus:border-surface-400 focus:ring-4 focus:ring-surface-100;
+    @apply focus:border-accent focus:ring-4 focus:ring-accent/10;
   }
 
   .badge-premium {
