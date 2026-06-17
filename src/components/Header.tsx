@@ -9,10 +9,10 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-50 glass dark:glass-dark border-b border-surface-100/50 dark:border-surface-700/50">
       <div className="px-4 h-14 flex items-center justify-between">
-        <Link to="/catalog" className="flex items-center gap-1">
+        <Link to="/catalog" className="flex items-center gap-2">
           <Logo size="sm" variant="icon" />
-          <span className="text-sm font-extrabold tracking-tight text-surface-900 dark:text-white">
-            Style<span className="text-gradient-brand">Tech</span>
+          <span className="text-sm font-bold tracking-widest text-surface-900 dark:text-white uppercase">
+            StyleTech
           </span>
         </Link>
 

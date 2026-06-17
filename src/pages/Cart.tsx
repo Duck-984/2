@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingBag, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { useTranslation } from '../hooks/useTranslation';
@@ -129,21 +129,27 @@ export const Cart = () => {
       </div>
 
       {/* Fixed checkout bar — positioned above BottomNav */}
-      <div className="fixed bottom-14 left-0 right-0 bg-white dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 px-4 py-3 pb-safe shadow-[0_-4px_12px_rgba(0,0,0,0.05)] z-40">
+      <div className="fixed bottom-14 left-0 right-0 bg-white dark:bg-surface-800 border-t border-surface-100 dark:border-surface-700 px-4 pt-3 pb-3 pb-safe shadow-elevated z-40">
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-sm font-medium text-surface-600 dark:text-surface-300">
-            {t('total')}:
+          <span className="text-sm font-medium text-surface-500 dark:text-surface-400">
+            {t('total')}
           </span>
-          <span className="text-lg font-bold text-surface-900">
+          <span className="text-xl font-extrabold text-surface-900">
             {formatPrice(getTotalPrice())}
           </span>
         </div>
         <button
           onClick={() => navigate('/checkout')}
-          className="w-full bg-surface-900 text-white py-3 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+          className="w-full bg-surface-900 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
         >
           {t('checkout')}
         </button>
+        <div className="flex items-center justify-center gap-1.5 mt-2.5">
+          <Lock className="w-3 h-3 text-surface-400" />
+          <span className="text-xs text-surface-400">
+            {language === 'ru' ? 'Ваши данные защищены' : "Ma'lumotlaringiz himoyalangan"}
+          </span>
+        </div>
       </div>
 
       {/* Remove confirmation modal */}

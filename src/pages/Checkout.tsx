@@ -199,25 +199,27 @@ export const Checkout = () => {
   if (orderPlaced) {
     return (
       <Layout showBottomNav={false}>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <CheckCircle className="w-24 h-24 text-green-500 mx-auto mb-4" />
+        <div className="container mx-auto px-4 py-16 text-center">
+          <div className="w-20 h-20 rounded-2xl bg-surface-900 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-white" />
+          </div>
           <h2 className="text-2xl font-bold text-surface-900 dark:text-white mb-2">{t('order_success')}</h2>
-          <p className="text-surface-600 dark:text-surface-400 mb-2">
-            {t('order_number')}: <span className="font-mono">{orderId.slice(0, 8)}</span>
+          <p className="text-surface-500 dark:text-surface-400 mb-1">
+            {t('order_number')}: <span className="font-mono font-semibold text-surface-900 dark:text-white">{orderId.slice(0, 8).toUpperCase()}</span>
           </p>
-          <p className="text-surface-600 dark:text-surface-400 mb-8">
+          <p className="text-surface-500 dark:text-surface-400 mb-8">
             {language === 'ru' ? 'Мы свяжемся с вами в ближайшее время' : "Tez orada siz bilan bog'lanamiz"}
           </p>
           <div className="space-y-3 max-w-md mx-auto">
             <button
               onClick={() => navigate('/orders')}
-              className="w-full bg-surface-900 text-white py-3 rounded-lg font-semibold hover:bg-surface-800 transition-colors"
+              className="w-full bg-surface-900 text-white py-3.5 rounded-xl font-semibold hover:bg-surface-800 transition-colors"
             >
               {t('order_history')}
             </button>
             <button
               onClick={() => navigate('/catalog')}
-              className="w-full bg-surface-200 dark:bg-surface-700 text-surface-900 dark:text-white py-3 rounded-lg font-semibold hover:bg-surface-300 dark:hover:bg-surface-600 transition-colors"
+              className="w-full bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-white py-3.5 rounded-xl font-semibold hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"
             >
               {t('continue_shopping')}
             </button>
@@ -304,7 +306,7 @@ export const Checkout = () => {
             {selectedZone?.free_threshold && selectedZone.free_threshold > 0 && (
               <div className={`flex items-center gap-2 text-xs rounded-xl px-3 py-2 mb-3 ${
                 subtotal >= selectedZone.free_threshold
-                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                  ? 'bg-surface-900 text-white'
                   : 'bg-surface-50 dark:bg-surface-700 text-surface-700 dark:text-surface-300'
               }`}>
                 <Tag className="w-3.5 h-3.5 flex-shrink-0" />
@@ -352,7 +354,7 @@ export const Checkout = () => {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     {isFree && formData.deliveryType === 'standard' ? (
-                      <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                      <span className="text-sm font-bold text-surface-900 dark:text-white">
                         {language === 'ru' ? 'Бесплатно' : 'Bepul'}
                       </span>
                     ) : (
@@ -368,19 +370,15 @@ export const Checkout = () => {
                 </div>
               </label>
 
-              {/* Express */}
+      {/* Express */}
               <label className={`flex items-center justify-between p-3.5 border rounded-xl cursor-pointer transition-colors ${
                 formData.deliveryType === 'express'
-                  ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20'
+                  ? 'border-surface-900 bg-surface-100 dark:bg-surface-700'
                   : 'border-surface-200 dark:border-surface-600 hover:bg-surface-50 dark:hover:bg-surface-700/50'
               }`}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    formData.deliveryType === 'express'
-                      ? 'bg-orange-100 dark:bg-orange-900/40'
-                      : 'bg-surface-100 dark:bg-surface-700'
-                  }`}>
-                    <Zap className={`w-4 h-4 ${formData.deliveryType === 'express' ? 'text-orange-500' : 'text-surface-500'}`} />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-100 dark:bg-surface-700">
+                    <Zap className={`w-4 h-4 ${formData.deliveryType === 'express' ? 'text-surface-900' : 'text-surface-500'}`} />
                   </div>
                   <div>
                     <p className="font-medium text-surface-900 dark:text-white text-sm">{t('delivery_express')}</p>
@@ -410,9 +408,9 @@ export const Checkout = () => {
             <div className="space-y-2">
               {[
                 { id: 'payme', icon: CreditCard, label: 'Payme', color: 'text-surface-900' },
-                { id: 'click', icon: CreditCard, label: 'Click', color: 'text-green-600' },
-                { id: 'uzum', icon: Smartphone, label: 'Uzum Bank', color: 'text-violet-600' },
-                { id: 'cash', icon: CreditCard, label: t('payment_cash'), color: 'text-surface-600' },
+                { id: 'click', icon: CreditCard, label: 'Click', color: 'text-surface-900' },
+                { id: 'uzum', icon: Smartphone, label: 'Uzum Bank', color: 'text-surface-900' },
+                { id: 'cash', icon: CreditCard, label: t('payment_cash'), color: 'text-surface-900' },
               ].map(({ id, icon: Icon, label, color }) => (
                 <label
                   key={id}
@@ -459,7 +457,7 @@ export const Checkout = () => {
                   )}:
                 </span>
                 {isFree ? (
-                  <span className="font-semibold text-green-600 dark:text-green-400">
+                  <span className="font-semibold text-surface-900 dark:text-white">
                     {language === 'ru' ? 'Бесплатно' : 'Bepul'}
                   </span>
                 ) : (

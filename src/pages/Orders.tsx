@@ -73,7 +73,7 @@ export const Orders = () => {
           {orders.map((order) => (
             <div
               key={order.id}
-              className="bg-white dark:bg-surface-800 rounded-lg shadow-sm overflow-hidden"
+              className="bg-white dark:bg-surface-800 rounded-2xl overflow-hidden shadow-card"
             >
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -106,7 +106,7 @@ export const Orders = () => {
                 <div className="space-y-2 mb-3">
                   {(Array.isArray(order.items) ? order.items as OrderItem[] : []).slice(0, 2).map((item: OrderItem, index: number) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-surface-100 dark:bg-surface-700 rounded overflow-hidden flex-shrink-0">
+          <div className="w-14 h-14 bg-surface-100 dark:bg-surface-700 rounded-xl overflow-hidden flex-shrink-0">
                         {item.image ? (
                           <img
                             src={item.image}

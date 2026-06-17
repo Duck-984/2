@@ -172,15 +172,15 @@ export const ProductDetail = () => {
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition shadow-sm"
                     >
-                      <ChevronLeft className="w-6 h-6" />
+                      <ChevronLeft className="w-5 h-5 text-surface-900" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition shadow-sm"
                     >
-                      <ChevronRight className="w-6 h-6" />
+                      <ChevronRight className="w-5 h-5 text-surface-900" />
                     </button>
 
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
@@ -201,15 +201,15 @@ export const ProductDetail = () => {
               </div>
 
               {product.images.length > 1 && (
-                <div className="overflow-x-auto px-4 py-2 flex space-x-2">
+                <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide bg-white dark:bg-surface-900">
                   {product.images.map((img: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                      className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
                         index === currentImageIndex
                           ? 'border-surface-900'
-                          : 'border-surface-300 dark:border-surface-600'
+                          : 'border-transparent hover:border-surface-300'
                       }`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
@@ -225,61 +225,61 @@ export const ProductDetail = () => {
           )}
         </div>
 
-        <div className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex-1">
+        <div className="p-5">
+          <div className="flex items-start justify-between mb-1">
+            <h1 className="text-xl font-bold text-surface-900 dark:text-white flex-1 leading-tight">
               {getLocalizedValue(product.name, language)}
             </h1>
             <button
               onClick={handleShare}
-              className="ml-2 p-2 text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
+              className="ml-3 p-2 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-700 transition text-surface-500 hover:text-surface-900"
             >
-              <Share2 className="w-6 h-6" />
+              <Share2 className="w-5 h-5" />
             </button>
           </div>
 
           {rating && rating.count > 0 && (
-            <div className="flex items-center space-x-2 mb-3">
+            <div className="flex items-center gap-1.5 mb-3">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-4 h-4 ${
+                    className={`w-3.5 h-3.5 ${
                       i < Math.round(rating.average)
-                        ? 'text-yellow-400 fill-current'
+                        ? 'text-surface-900 fill-current'
                         : 'text-surface-300 dark:text-surface-600'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-sm text-surface-600 dark:text-surface-400">
-                {rating.average.toFixed(1)} ({rating.count} {language === 'ru' ? 'отзывов' : 'sharh'})
+              <span className="text-xs text-surface-500 dark:text-surface-400">
+                {rating.average.toFixed(1)} · {rating.count} {language === 'ru' ? 'отзывов' : 'sharh'}
               </span>
             </div>
           )}
 
-          <p className="text-3xl font-bold text-surface-900 mb-4">
+          <p className="text-2xl font-extrabold text-surface-900 mb-4">
             {formatPrice(product.price as number)}
           </p>
 
           {product.stock > 0 ? (
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-green-600 dark:text-green-400">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1.5 h-1.5 bg-success rounded-full"></div>
+              <span className="text-sm text-success font-medium">
                 {t('in_stock')}
-                {product.stock < 10 && ` (${language === 'ru' ? 'осталось' : 'qoldi'}: ${product.stock})`}
+                {product.stock < 10 && ` — ${language === 'ru' ? 'осталось' : 'qoldi'}: ${product.stock}`}
               </span>
             </div>
           ) : (
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-sm text-red-600 dark:text-red-400">{t('out_of_stock')}</span>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1.5 h-1.5 bg-danger rounded-full"></div>
+              <span className="text-sm text-danger font-medium">{t('out_of_stock')}</span>
             </div>
           )}
 
           {product.sizes.length > 0 && (
-            <div className="mb-4">
-              <p className="text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+            <div className="mb-5">
+              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2.5">
                 {t('select_size')}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -287,10 +287,10 @@ export const ProductDetail = () => {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 rounded-lg border transition-colors ${
+                    className={`min-w-[44px] h-11 px-4 rounded-xl border text-sm font-semibold transition-all ${
                       selectedSize === size
                         ? 'bg-surface-900 text-white border-surface-900'
-                        : 'bg-white dark:bg-surface-800 text-surface-900 dark:text-white border-surface-300 dark:border-surface-600'
+                        : 'bg-white dark:bg-surface-800 text-surface-900 dark:text-white border-surface-200 dark:border-surface-600 hover:border-surface-400'
                     }`}
                   >
                     {size}
@@ -301,28 +301,28 @@ export const ProductDetail = () => {
           )}
 
           {product.colors.length > 0 && (
-            <div className="mb-4">
-              <p className="text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+            <div className="mb-5">
+              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2.5">
                 {t('select_color')}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {product.colors.map((color: { name: string; hex: string }) => {
                   const col = color;
                   return (
                     <button
                       key={col.hex}
                       onClick={() => setSelectedColor(col)}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all ${
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border text-sm transition-all ${
                         selectedColor?.hex === col.hex
-                          ? 'border-surface-900 bg-surface-100'
-                          : 'border-surface-300 dark:border-surface-600'
+                          ? 'border-surface-900 bg-surface-50 dark:bg-surface-800'
+                          : 'border-surface-200 dark:border-surface-600 hover:border-surface-400'
                       }`}
                     >
                       <div
-                        className="w-6 h-6 rounded-full border border-surface-300"
+                        className="w-5 h-5 rounded-full border border-surface-200 flex-shrink-0"
                         style={{ backgroundColor: col.hex }}
                       />
-                      <span className="text-sm text-surface-900 dark:text-white">{col.name}</span>
+                      <span className="text-surface-900 dark:text-white font-medium">{col.name}</span>
                     </button>
                   );
                 })}
@@ -331,47 +331,47 @@ export const ProductDetail = () => {
           )}
 
           <div className="mb-6">
-            <p className="text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+            <p className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2.5">
               {t('quantity')}
             </p>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 rounded-full bg-surface-200 dark:bg-surface-700 flex items-center justify-center hover:bg-surface-300 dark:hover:bg-surface-600"
+                className="w-11 h-11 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-800 flex items-center justify-center hover:border-surface-400 transition active:scale-95"
               >
-                <Minus className="w-5 h-5" />
+                <Minus className="w-4 h-4" />
               </button>
-              <span className="text-xl font-semibold min-w-[2rem] text-center">{quantity}</span>
+              <span className="text-xl font-bold min-w-[2rem] text-center text-surface-900 dark:text-white">{quantity}</span>
               <button
                 onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                className="w-10 h-10 rounded-full bg-surface-200 dark:bg-surface-700 flex items-center justify-center hover:bg-surface-300 dark:hover:bg-surface-600"
+                className="w-11 h-11 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-800 flex items-center justify-center hover:border-surface-400 transition active:scale-95"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-2">
+            <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-2">
               {t('description')}
             </h2>
-            <p className="text-surface-600 dark:text-surface-400 whitespace-pre-line">
+            <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed whitespace-pre-line">
               {getLocalizedValue(product.description, language)}
             </p>
           </div>
 
           {product.specs && Object.keys(product.specs).length > 0 && (
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-3">
+              <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-3">
                 {t('specifications')}
               </h2>
-              <div className="space-y-2">
-                {Object.entries(product.specs).map(([key, value]) => (
+              <div className="bg-surface-50 dark:bg-surface-800 rounded-xl overflow-hidden">
+                {Object.entries(product.specs).map(([key, value], i) => (
                   <div
                     key={key}
-                    className="flex justify-between py-2 border-b border-surface-200 dark:border-surface-700"
+                    className={`flex justify-between py-2.5 px-4 text-sm ${i > 0 ? 'border-t border-surface-100 dark:border-surface-700' : ''}`}
                   >
-                    <span className="text-surface-600 dark:text-surface-400">{key}</span>
+                    <span className="text-surface-500 dark:text-surface-400">{key}</span>
                     <span className="text-surface-900 dark:text-white font-medium">{String(value)}</span>
                   </div>
                 ))}
@@ -381,30 +381,30 @@ export const ProductDetail = () => {
 
           {reviews.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-3">
+              <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-3">
                 {language === 'ru' ? 'Отзывы' : 'Sharhlar'} ({reviews.length})
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {reviews.slice(0, 3).map((review) => (
-                  <div key={review.id} className="bg-surface-50 dark:bg-surface-800 rounded-lg p-4">
+                  <div key={review.id} className="bg-surface-50 dark:bg-surface-800 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium text-surface-900 dark:text-white">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-surface-900 dark:text-white">
                           {review.user_name}
                         </span>
                         {review.is_verified_purchase && (
-                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">
+                          <span className="text-xs bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-300 px-2 py-0.5 rounded-full">
                             {language === 'ru' ? 'Проверено' : 'Tasdiqlangan'}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-4 h-4 ${
+                            className={`w-3.5 h-3.5 ${
                               i < review.rating
-                                ? 'text-yellow-400 fill-current'
+                                ? 'text-surface-900 fill-current'
                                 : 'text-surface-300 dark:text-surface-600'
                             }`}
                           />

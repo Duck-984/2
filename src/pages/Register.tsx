@@ -63,17 +63,17 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-gray-950 to-slate-900">
+    <div className="min-h-screen flex flex-col bg-surface-900">
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl mb-5">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-5">
               <ShoppingBag className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight mb-2">
               {language === 'ru' ? 'Регистрация' : "Ro'yxatdan o'tish"}
             </h1>
-            <p className="text-surface-300 text-sm">
+            <p className="text-surface-400 text-sm">
               {language === 'ru'
                 ? 'Введите данные для оформления заказов'
                 : "Buyurtma berish uchun ma'lumotlarni kiriting"}
@@ -81,9 +81,9 @@ export const Register = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-5 space-y-4">
+            <div className="bg-white/8 border border-white/10 rounded-2xl p-5 space-y-4">
               <div>
-                <label className="flex items-center gap-1.5 text-sm font-medium text-surface-400 mb-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-surface-400 uppercase tracking-wide mb-2">
                   <User className="w-3.5 h-3.5" />
                   {language === 'ru' ? 'Ваше имя' : 'Ismingiz'} *
                 </label>
@@ -92,12 +92,12 @@ export const Register = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={language === 'ru' ? 'Иван Петров' : 'Ism Familiya'}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-surface-400 focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="flex items-center gap-1.5 text-sm font-medium text-surface-400 mb-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-surface-400 uppercase tracking-wide mb-2">
                   <Phone className="w-3.5 h-3.5" />
                   {language === 'ru' ? 'Телефон' : 'Telefon'} *
                 </label>
@@ -106,7 +106,7 @@ export const Register = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+998 90 123 45 67"
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-surface-400 focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                 />
               </div>
             </div>
@@ -114,9 +114,9 @@ export const Register = () => {
             <button
               type="submit"
               disabled={saving}
-              className="w-full bg-surface-900 hover:bg-surface-800 disabled:bg-surface-700 text-white py-4 rounded-2xl font-semibold text-base transition-all flex items-center justify-center gap-2"
+              className="w-full bg-white hover:bg-surface-100 disabled:bg-white/60 text-surface-900 py-4 rounded-2xl font-semibold text-base transition-all flex items-center justify-center gap-2"
             >
-              {saving && <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+              {saving && <span className="w-5 h-5 border-2 border-surface-900/40 border-t-surface-900 rounded-full animate-spin" />}
               {language === 'ru' ? 'Продолжить' : 'Davom etish'}
             </button>
           </form>
