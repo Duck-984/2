@@ -38,7 +38,16 @@ export const Catalog = () => {
 
   const sort = { field: sortBy, order: sortOrder };
 
-  const { data: products = [], isLoading } = useProducts(filters, sort);
+  const {
+    data: productsData,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useProducts(filters, sort);
+
+  const products = productsData?.pages.flatMap((p) => p.items) ?? [];
+  const total = productsData?.pages[0]?.total ?? 0;
 
   const allSizes = Array.from(new Set(products.flatMap((p) => p.sizes))).sort();
   const allColors = Array.from(
@@ -139,7 +148,7 @@ export const Catalog = () => {
         {/* Sort row */}
         <div className="flex items-center justify-between">
           <span className="text-xs text-surface-400 font-medium">
-            {products.length} {language === 'ru' ? 'товаров' : 'mahsulot'}
+            {isLoading ? '...' : `${total} ${language === 'ru' ? 'товаров' : 'mahsulot'}`}
           </span>
           <select
             value={`${sortBy}-${sortOrder}`}
@@ -279,13 +288,36 @@ export const Catalog = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {products.map((product, i) => (
-              <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 0.05}s` }}>
-                <ProductCard product={product} language={language} />
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              {products.map((product, i) => (
+                <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${Math.min(i, 5) * 0.05}s` }}>
+                  <ProductCard product={product} language={language} />
+                </div>
+              ))}
+            </div>
+
+            {hasNextPage && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-800 text-sm font-semibold text-surface-900 dark:text-white hover:bg-surface-50 dark:hover:bg-surface-700 transition-all disabled:opacity-60"
+                >
+                  {isFetchingNextPage ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-surface-400 border-t-surface-900 rounded-full animate-spin" />
+                      {language === 'ru' ? 'Загрузка...' : 'Yuklanmoqda...'}
+                    </>
+                  ) : (
+                    language === 'ru'
+                      ? `Показать ещё (${total - products.length})`
+                      : `Yana ko'rsatish (${total - products.length})`
+                  )}
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </Layout>

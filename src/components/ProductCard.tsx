@@ -1,10 +1,10 @@
+import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { getLocalizedValue, formatPrice } from '../lib/utils';
 import { useCartStore } from '../store/useCartStore';
 import { hapticNotification } from '../lib/telegram';
 import { toast } from './Toast';
-import { useState } from 'react';
 import type { Database } from '../lib/supabase';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -14,7 +14,7 @@ interface ProductCardProps {
   language: 'ru' | 'uz';
 }
 
-export const ProductCard = ({ product, language }: ProductCardProps) => {
+export const ProductCard = memo(({ product, language }: ProductCardProps) => {
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -131,4 +131,4 @@ export const ProductCard = ({ product, language }: ProductCardProps) => {
       </div>
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import {
   productQueries,
   categoryQueries,
@@ -13,6 +13,7 @@ import {
   userQueries,
   type ProductFilters,
   type ProductSort,
+  PAGE_SIZE,
 } from './queries';
 import type { Database } from '../supabase';
 
@@ -20,9 +21,14 @@ export { userQueries } from './queries';
 
 // Products
 export const useProducts = (filters?: ProductFilters, sort?: ProductSort) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['products', filters, sort],
-    queryFn: () => productQueries.getAll(filters, sort),
+    queryFn: ({ pageParam = 0 }) => productQueries.getAll(filters, sort, pageParam, PAGE_SIZE),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, p) => sum + p.items.length, 0);
+      return loaded < lastPage.total ? loaded : undefined;
+    },
   });
 };
 

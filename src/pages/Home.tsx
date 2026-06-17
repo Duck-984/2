@@ -19,10 +19,11 @@ export const Home = () => {
   const user = getTelegramUser();
   const { data: userReferrals = [] } = useUserReferrals(user?.id || 0);
   const { data: banners = [] } = useBanners(true);
-  const { data: featuredProducts = [], isLoading: productsLoading } = useProducts(
+  const { data: productsData, isLoading: productsLoading } = useProducts(
     undefined,
     { field: 'views', order: 'desc' }
   );
+  const featuredProducts = productsData?.pages.flatMap((p) => p.items) ?? [];
 
   useEffect(() => {
     if (user) {

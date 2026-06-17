@@ -25,10 +25,12 @@ export interface ProductSort {
   order: 'asc' | 'desc';
 }
 
+export const PAGE_SIZE = 20;
+
 const delay = (ms = 200) => new Promise((r) => setTimeout(r, ms));
 
 export const productQueries = {
-  getAll: async (filters?: ProductFilters, sort?: ProductSort) => {
+  getAll: async (filters?: ProductFilters, sort?: ProductSort, offset = 0, limit = PAGE_SIZE) => {
     if (!isSupabaseConfigured) {
       await delay();
       let items = [...mockProducts].filter((p) => p.is_active);
@@ -43,12 +45,12 @@ export const productQueries = {
       if (filters?.sizes?.length) items = items.filter((p) => p.sizes.some((s) => filters.sizes!.includes(s)));
       if (filters?.colors?.length) items = items.filter((p) => p.colors.some((c) => filters.colors!.includes(c.hex)));
       if (sort) items.sort((a, b) => sort.order === 'asc' ? (a[sort.field] as number) - (b[sort.field] as number) : (b[sort.field] as number) - (a[sort.field] as number));
-      return items;
+      return { items: items.slice(offset, offset + limit), total: items.length };
     }
 
     let query = supabase
       .from('products')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('is_active', true);
 
     if (filters?.categoryId) {
@@ -78,11 +80,12 @@ export const productQueries = {
       query = query.order('created_at', { ascending: false });
     }
 
-    const { data, error } = await query;
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
 
     if (error) throw error;
 
-    // Client-side filtering for arrays
     let filteredData = data || [];
 
     if (filters?.sizes && filters.sizes.length > 0) {
@@ -97,7 +100,7 @@ export const productQueries = {
       );
     }
 
-    return filteredData;
+    return { items: filteredData, total: count ?? 0 };
   },
 
   getBySlug: async (slug: string) => {
